@@ -1,0 +1,30 @@
+{
+  "name": "taskcluster-integration-poc",
+  "version": "1.0.0",
+  "description": "A proof-of-concept to push to the Try server from GitHub via a Taskcluster job",
+  "main": "background.js",
+  "scripts": {
+    "start": "web-ext run --source-dir build",
+    "watch": "webpack --watch",
+    "package": "web-ext build --source-dir build --overwrite-dest",
+    "build": "webpack",
+    "test": "mach try"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/biancadanforth/taskcluster-integration-poc.git"
+  },
+  "author": "Bianca Danforth",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/biancadanforth/taskcluster-integration-poc/issues"
+  },
+  "homepage": "https://github.com/biancadanforth/taskcluster-integration-poc#readme",
+  "devDependencies": {
+    "copy-webpack-plugin": "4.6.0",
+    "generate-json-webpack-plugin": "0.3.1",
+    "web-ext": "2.9.2",
+    "webpack": "4.27.1",
+    "webpack-cli": "3.1.2"
+  }
+}
