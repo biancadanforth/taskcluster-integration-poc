@@ -1,0 +1,50 @@
+# Reference: https://github.com/mozilla/normandy/blob/26b6537d7b6a0986f30f58bfb4c0d85ad8a6eea1/.taskcluster.yml
+version: 0
+
+metadata:
+  name: Firefox Experiments
+  description: Firefox Experiments CI tasks
+  owner: '{{ event.head.user.email }}'
+  source: '{{ event.head.repo.url }}'
+
+tasks:
+  - metadata:
+      name: experiments:decision
+      description: Experiments decision task
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
+    # Identifies the Taskcluster provisioner responsible for the compute resources
+    # (could be 1 CPU, a fraction of a CPU, multiple CPUs...)that will execute the
+    # task. e.g. 'aws-provisioner-v1' is the AWS Provisioner, which runs its tasks
+    # on Amazon EC2 instances using Docker.
+    provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    # A parameter specific to the AWS Provisioner which identifies the pool of EC2
+    # resources within which the task should be executed. Pools may use different
+    # EC2 instance types, AMIs (Amazon Machine Images), etc.
+    workerType: '{{ taskcluster.docker.workerType }}'
+    # TODO: add `scopes`? a scope is a permission to perform a particular action. A task has a set of 
+    # scopes that determine what the task can do. These scopes are validated by the worker.
+    payload: # The format of a task's payload property is specific to the worker that will execute it
+      # If the task is not completed by its deadline, it will be resolved as
+      # `exception` with reason "deadline-exceeded"
+      maxRunTime: 3600 # 60 minutes
+      image: node # The Docker image to pull
+      command: # The command to run within that Docker image
+        - /bin/bash
+        - '--login' # this is notably absent from mythmon's config
+        - '-c'
+        - >- # multi-line command
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          npm install . &&
+          npm test
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - push
+
+allowPullRequests: collaborators
