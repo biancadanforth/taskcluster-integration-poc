@@ -1,50 +1,91 @@
-# Reference: https://github.com/mozilla/normandy/blob/26b6537d7b6a0986f30f58bfb4c0d85ad8a6eea1/.taskcluster.yml
-version: 0
-
-metadata:
-  name: Firefox Experiments
-  description: Firefox Experiments CI tasks
-  owner: '{{ event.head.user.email }}'
-  source: '{{ event.head.repo.url }}'
-
+# References:
+#  - https://github.com/taskcluster/taskcluster-github/blob/master/.taskcluster.yml
+#  - https://github.com/taskcluster/taskcluster-github/blob/master/docs/taskcluster-yml-v1.md
+version: 1
+policy:
+  pullRequests: public
 tasks:
-  - metadata:
-      name: experiments:decision
-      description: Experiments decision task
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-    # Identifies the Taskcluster provisioner responsible for the compute resources
-    # (could be 1 CPU, a fraction of a CPU, multiple CPUs...)that will execute the
-    # task. e.g. 'aws-provisioner-v1' is the AWS Provisioner, which runs its tasks
-    # on Amazon EC2 instances using Docker.
-    provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    # A parameter specific to the AWS Provisioner which identifies the pool of EC2
-    # resources within which the task should be executed. Pools may use different
-    # EC2 instance types, AMIs (Amazon Machine Images), etc.
-    workerType: '{{ taskcluster.docker.workerType }}'
-    # TODO: add `scopes`? a scope is a permission to perform a particular action. A task has a set of 
-    # scopes that determine what the task can do. These scopes are validated by the worker.
-    payload: # The format of a task's payload property is specific to the worker that will execute it
-      # If the task is not completed by its deadline, it will be resolved as
-      # `exception` with reason "deadline-exceeded"
-      maxRunTime: 3600 # 60 minutes
-      image: node # The Docker image to pull
-      command: # The command to run within that Docker image
-        - /bin/bash
-        - '--login' # this is notably absent from mythmon's config
-        - '-c'
-        - >- # multi-line command
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          npm install . &&
-          npm test
-    extra:
-      github:
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - push
-
-allowPullRequests: collaborators
+  # When a PR is opened, reopened or synchronized, perform this task
+  - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
+    then:
+      # QUESTION - how does taskId vary? Seems like passing a static string each time.
+      taskId: {$eval: as_slugid("pr_task")}
+      created: {$fromNow: ''}
+      # If the task is not completed by its deadline, it will be resolved as `exception`
+      # with reason "deadline-exceeded"
+      deadline: {$fromNow: '1 hour'}
+      # Identifies the Taskcluster provisioner responsible for the compute resources
+      # (could be 1 CPU, a fraction of a CPU, multiple CPUs...)that will execute the
+      # task. e.g. 'aws-provisioner-v1' is the AWS Provisioner, which runs its tasks
+      # on Amazon EC2 instances using Docker.
+      # QUESTION - is this the right provisioner? In mythmon's v0, he had something like:
+      # '{{ taskcluster.docker.provisionerId }}'
+      provisionerId: aws-provisioner-v1
+      # A parameter specific to the AWS Provisioner which identifies the pool of EC2
+      # resources within which the task should be executed. Pools may use different
+      # EC2 instance types, AMIs (Amazon Machine Images), etc.
+      # QUESTION - is this the right worker? In mythmon's v0, he had something like:
+      # '{{ taskcluster.docker.workerType }}'
+      workerType: github-worker
+      # A scope is a permission to perform a particular action. A task has a set of
+      # scopes that determine what the task can do. These scopes are validated by the worker.
+      scopes:
+        - secrets:get:project/taskcluster/testing/taskcluster-github # QUESTION - What scopes do I need?
+      payload: # The format of a task's payload property is specific to the worker that will execute it
+        maxRunTime: 600 # 10 minutes
+         # QUESTION: Is this the right image? Where can I find all supported images? Do all images have
+         # Firefox installed to push to Try? I want to run TALOS and mochitests in addition to unit tests
+         # from my repo
+        image: "node:8" # The Docker image to pull
+        env: # QUESTION: What is this?
+          DEBUG: "* -mocha* -nock* -express* -body-parser* -eslint*" # QUESTION: What is this? What does *, -mocha* etc. do?
+        features: # QUESTION: What is this?
+          taskclusterProxy: true # QUESTION: What does this mean?
+        command: # The command to run within that Docker image
+          - "/bin/bash"
+          - "-lc" # '--login' (executes user's profile commands), '-c' (executes commands from a string)
+          - >- # QUESTION: Will multi-line commands like this work in v1? Can I omit -c above?
+            git clone ${event.pull_request.head.repo.git_url} repo &&
+            cd repo && git checkout ${event.pull_request.head.sha} &&
+            npm install &&
+            npm run lint
+      # TODO bdanforth: Replace `npm run lint` above with `npm test`
+      metadata:
+        name: "Firefox Experiments GitHub Tests"
+        description: "All tests"
+        owner: ${event.pull_request.user.login}@users.noreply.github.com
+        source: ${event.repository.url}
+  # When a commit is pushed to the repo, perform this task
+  # QUESTION: Does this cover additional commits to an existing open PR?
+  - $if: 'tasks_for == "github-push"'
+    then:
+      taskId: {$eval: as_slugid("push_task")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      scopes:
+        - secrets:get:project/taskcluster/testing/taskcluster-github
+      payload:
+        maxRunTime: 600
+        image: "node:8"
+        env:
+          DEBUG: "* -mocha* -nock* -express* -body-parser* -eslint*"
+          NO_TEST_SKIP: "true"
+        features:
+          taskclusterProxy: true
+        command:
+          - "/bin/bash"
+          - "-lc"
+          - >-
+            git clone ${event.repository.url} repo &&
+            cd repo &&
+            git checkout ${event.after} &&
+            npm install &&
+            npm run lint
+      # TODO bdanforth: Replace `npm run lint` above with `npm test`
+      metadata:
+        name: "Taskcluster GitHub Tests"
+        description: "All tests"
+        owner: ${event.pusher.name}@users.noreply.github.com
+        source: ${event.repository.url}
