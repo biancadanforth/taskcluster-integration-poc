@@ -4,11 +4,12 @@
   "description": "A proof-of-concept to push to the Try server from GitHub via a Taskcluster job",
   "main": "background.js",
   "scripts": {
-    "start": "web-ext run --source-dir build",
-    "watch": "webpack --watch",
-    "package": "web-ext build --source-dir build --overwrite-dest",
     "build": "webpack",
-    "test": "mach try"
+    "lint": "bin/run_lints.sh",
+    "package": "web-ext build --source-dir build --overwrite-dest",
+    "start": "web-ext run --source-dir build",
+    "test": "mach try",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,9 @@
   "homepage": "https://github.com/biancadanforth/taskcluster-integration-poc#readme",
   "devDependencies": {
     "copy-webpack-plugin": "4.6.0",
+    "eslint": "5.10.0",
+    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-plugin-import": "2.14.0",
     "generate-json-webpack-plugin": "0.3.1",
     "web-ext": "2.9.2",
     "webpack": "4.27.1",
