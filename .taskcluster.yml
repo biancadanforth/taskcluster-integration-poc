@@ -1,0 +1,86 @@
+# References:
+#  - https://github.com/taskcluster/taskcluster-github/blob/master/.taskcluster.yml
+#  - https://github.com/taskcluster/taskcluster-github/blob/master/docs/taskcluster-yml-v1.md
+version: 1
+policy:
+  pullRequests: public # Run these tasks for qualifying GH events from any one in the repo
+tasks:
+  # When a PR is opened, reopened or synchronized, perform this task
+  # This covers additional commits to an existing open PR
+  - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
+    then:
+      # TC creates a task group with tasks in it; each task has an ID. TC will provide a link
+      # built with these IDs in GH's GUI every time a task is created, even if it fails.
+      taskId: {$eval: as_slugid("pr_task")} # Returns a hash of a string
+      created: {$fromNow: ''}
+      # If the task is not completed by its deadline, it will be resolved as `exception`
+      # with reason "deadline-exceeded"
+      deadline: {$fromNow: '1 hour'}
+      # Identifies the Taskcluster provisioner responsible for the compute resources
+      # (could be 1 CPU, a fraction of a CPU, multiple CPUs...)that will execute the
+      # task. e.g. 'aws-provisioner-v1' is the AWS Provisioner, which runs its tasks
+      # on Amazon EC2 instances using Docker.
+      provisionerId: aws-provisioner-v1
+      # A parameter specific to the AWS Provisioner which identifies the pool of EC2
+      # resources within which the task should be executed. Pools may use different
+      # EC2 instance types, AMIs (Amazon Machine Images), etc.
+      workerType: github-worker # TC's generic worker for any github projects; can do Try server pushes
+      # A scope is a permission to perform a particular action. A task has a set of
+      # scopes that determine what the task can do. These scopes are validated by the worker.
+      payload: # The format of a task's payload property is specific to the worker that will execute it
+        maxRunTime: 600 # 10 minutes
+         # QUESTION: Do we need a different image for pushing to Try?
+        image: "node:8" # The Docker image to pull
+        env: # Environment variables to declare in the shell
+          DEBUG: "* -eslint*" # Say you have debug statements in library code; a DEBUG variable with a
+          # value of * will log all levels of debug statements
+        command: # The command to run within that Docker image
+          - "/bin/bash"
+          - "-lc" # '--login' (executes user's profile commands), '-c' (executes commands from a string)
+          - >-
+            git clone ${event.pull_request.head.repo.git_url} repo &&
+            cd repo &&
+            git checkout ${event.pull_request.head.sha} &&
+            npm install &&
+            npm run build &&
+            npm run lint
+      # TODO bdanforth: Replace `npm run lint` above with `npm test`
+      metadata:
+        name: "Firefox Experiments GitHub Tests"
+        description: "All tests"
+        owner: ${event.pull_request.user.login}@users.noreply.github.com
+        source: ${event.repository.url}
+  # When a commit is pushed to master, perform this task
+  # If a branch is merged without being updated first, the tests could pass on the branch
+  # but not when things are merged into master.
+  - $if: 'tasks_for == "github-push"'
+    then:
+      $if: 'event.ref == "refs/heads/master"'
+      then:
+        taskId: {$eval: as_slugid("push_task")}
+        created: {$fromNow: ''}
+        deadline: {$fromNow: '1 hour'}
+        provisionerId: aws-provisioner-v1
+        workerType: github-worker
+        payload:
+          maxRunTime: 600
+          image: "node:8"
+          env:
+            DEBUG: "* -eslint*"
+            NO_TEST_SKIP: "true"
+          command:
+            - "/bin/bash"
+            - "-lc"
+            - >-
+              git clone ${event.repository.url} repo &&
+              cd repo &&
+              git checkout ${event.after} &&
+              npm install &&
+              npm run build &&
+              npm run lint
+        # TODO bdanforth: Replace `npm run lint` above with `npm test`
+        metadata:
+          name: "Firefox Experiments GitHub Tests"
+          description: "All tests"
+          owner: ${event.pusher.name}@users.noreply.github.com
+          source: ${event.repository.url}
