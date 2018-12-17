@@ -24,13 +24,20 @@ tasks:
       # A parameter specific to the AWS Provisioner which identifies the pool of EC2
       # resources within which the task should be executed. Pools may use different
       # EC2 instance types, AMIs (Amazon Machine Images), etc.
+      # Generally, github-worker is a variant of docker-worker in TC docs
       workerType: github-worker # TC's generic worker for any github projects; can do Try server pushes
       # A scope is a permission to perform a particular action. A task has a set of
       # scopes that determine what the task can do. These scopes are validated by the worker.
       payload: # The format of a task's payload property is specific to the worker that will execute it
         maxRunTime: 600 # 10 minutes
-         # QUESTION: Do we need a different image for pushing to Try?
         image: "node:8" # The Docker image to pull
+        # The worker will automatically upload any artifacts upon task completion
+        artifacts: # syntax depends on the workerType
+          public/web-ext-artifacts:
+            # contentType is not a valid key for workerType github-worker
+            expires: {$fromNow: '14 days'}
+            path: /repo/web-ext-artifacts
+            type: directory
         env: # Environment variables to declare in the shell
           DEBUG: "* -eslint*" # Say you have debug statements in library code; a DEBUG variable with a
           # value of * will log all levels of debug statements
@@ -43,8 +50,8 @@ tasks:
             git checkout ${event.pull_request.head.sha} &&
             npm install &&
             npm run build &&
-            npm run lint
-      # TODO bdanforth: Replace `npm run lint` above with `npm test`
+            npm run lint &&
+            npm run package
       metadata:
         name: "Firefox Experiments GitHub Tests"
         description: "All tests"
@@ -65,6 +72,12 @@ tasks:
         payload:
           maxRunTime: 600
           image: "node:8"
+          artifacts:
+            public/web-ext-artifacts:
+              # contentType is not a valid key for workerType github-worker
+              expires: {$fromNow: '14 days'}
+              path: /repo/web-ext-artifacts
+              type: directory
           env:
             DEBUG: "* -eslint*"
             NO_TEST_SKIP: "true"
@@ -77,8 +90,8 @@ tasks:
               git checkout ${event.after} &&
               npm install &&
               npm run build &&
-              npm run lint
-        # TODO bdanforth: Replace `npm run lint` above with `npm test`
+              npm run lint &&
+              npm run package
         metadata:
           name: "Firefox Experiments GitHub Tests"
           description: "All tests"
