@@ -15,22 +15,30 @@ set -e
 #   - Nightly: https://hg.mozilla.org/mozilla-central
 #   - Beta: https://hg.mozilla.org/releases/mozilla-beta
 #   - Release: https://hg.mozilla.org/releases/mozilla-release
-echo ">>> shallow clone Firefox"
-hg clone --rev=5 https://hg.mozilla.org/mozilla-central
+echo ">>> clone Firefox"
+# TODO: Investigate how to get a shallow clone of Firefox -- this full clone takes 3ish minutes alone.
+hg clone https://hg.mozilla.org/mozilla-central
 
 # Test dir(s) specified per bugs 1451159 and 1458571
-echo ">>> copy XPI to test dir"
+echo ">>> copy XPI (or ZIP) to test dir"
+cp /repo/web-ext-artifacts/* /repo/mozilla-central/testing/profiles/common/extensions/
 
 # --artifact is not a recognized option for './mach build', so enable artifact builds via .mozconfig
 echo ">>> create .mozconfig to enable artifact builds locally"
 # TODO: For Beta and Release builds, add 'releases/mozilla-beta' or 'releases/mozilla-release'
 # respectively to the list of CANDIDATE_TREES in ./python/mozbuild/mozbuild/artifacts.py
 
+echo ">>> build Firefox"
+# ./mach clobber
+# ./mach build
+
+# The diff does NOT need to be checked in to run tests locally
 # Note: The extension is only installed with the testing profile (i.e. when running mochitests or talos
 # tests); it is not installed with ./mach build or ./mach run separately.
-echo ">>> verify successful mochitest locally"
+echo ">>> verify with local mochitest that extension is installed"
 # ./mach mochitest /path/to/test
 
+# The diff needs to be checked in to run on the Try server
 echo ">>> commit diff to hg"
 
 # TODO: What would this look like? Try running a local ./mach test? Would need to build
