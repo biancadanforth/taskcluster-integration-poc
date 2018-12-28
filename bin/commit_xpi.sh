@@ -24,9 +24,13 @@ echo ">>> copy XPI (or ZIP) to test dir"
 cp /repo/web-ext-artifacts/* /repo/mozilla-central/testing/profiles/common/extensions/
 
 # --artifact is not a recognized option for './mach build', so enable artifact builds via .mozconfig
-echo ">>> create .mozconfig to enable artifact builds locally"
+echo ">>> copy over .mozconfig to enable artifact builds locally"
+# TODO: make .mozconfig file
 # TODO: For Beta and Release builds, add 'releases/mozilla-beta' or 'releases/mozilla-release'
 # respectively to the list of CANDIDATE_TREES in ./python/mozbuild/mozbuild/artifacts.py
+
+echo ">>> copy test files over to Firefox"
+# TODO: copy contents of repo/test/ into Firefox's ./testing/extensions/ dir. 
 
 echo ">>> build Firefox"
 # ./mach clobber
@@ -36,7 +40,7 @@ echo ">>> build Firefox"
 # Note: The extension is only installed with the testing profile (i.e. when running mochitests or talos
 # tests); it is not installed with ./mach build or ./mach run separately.
 echo ">>> verify with local mochitest that extension is installed"
-# ./mach mochitest /path/to/test
+# ./mach test /path/to/test
 
 # The diff needs to be checked in to run on the Try server
 echo ">>> commit diff to hg"
