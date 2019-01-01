@@ -4,16 +4,14 @@
 
 // (Modeled after Screenshots system add-on tests in browser/extensions/screenshots/test)
 
-/* global ChromeUtils, AddonManager, add_task, ok, is */
+ChromeUtils.defineModuleGetter(this, "AddonManager",
+  "resource://gre/modules/AddonManager.jsm");
 
-ChromeUtils.defineModuleGetter(this, 'AddonManager',
-  'resource://gre/modules/AddonManager.jsm');
-
-const ADDON_NAME = 'taskcluster-integration-poc';
+const ADDON_NAME = "taskcluster-integration-poc";
 const ADDON_ID = `${ADDON_NAME}@mozilla.org`;
 
 add_task(async () => {
   const addon = await AddonManager.getAddonByID(`${ADDON_ID}`);
-  ok(!!addon, 'Addon exists');
-  is(addon.name, `${ADDON_NAME}`, 'Addon has matching id');
+  ok(!!addon, "Addon exists");
+  is(addon.name, `${ADDON_NAME}`, "Addon has matching id");
 });

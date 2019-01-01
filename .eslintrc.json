@@ -1,8 +1,16 @@
 {
-  "extends": "airbnb-base",
+  "extends": [
+    "airbnb-base",
+    "plugin:mozilla/recommended"
+  ],
   "env": {
     "webextensions": true,
     "browser": true
+  },
+  "globals": {
+    "add_task": true,
+    "is": true,
+    "ok": true
   },
   "rules": {
     "object-curly-newline": ["error", {"consistent": true}],

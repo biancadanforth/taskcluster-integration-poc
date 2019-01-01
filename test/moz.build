@@ -2,6 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# TODO: (from _6a68, written by Standard8) Consider automatically generating a moz.build file
+# instead of copying one over: e.g. https://github.com/mozilla/followonsearch/blob/master/scripts/export_mc.py
+
 # The 'browser chrome' flavor of mochitests
 BROWSER_CHROME_MANIFESTS += [
   'browser_chrome/browser.ini'

@@ -44,7 +44,3 @@ echo ">>> verify with local mochitest that extension is installed"
 
 # The diff needs to be checked in to run on the Try server
 echo ">>> commit diff to hg"
-
-# TODO: What would this look like? Try running a local ./mach test? Would need to build
-# Firefox locally as well.
-echo ">>> verify commit"
