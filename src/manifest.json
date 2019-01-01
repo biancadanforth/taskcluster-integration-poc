@@ -5,6 +5,11 @@
   "version": "$version",
   "author": "$author",
   "homepage_url": "$homepage",
+  "applications": {
+   "gecko": {
+     "id": "taskcluster-integration-poc@mozilla.org"
+    }
+  },
   "icons": {
     "48": "icons/message-48.png"
   },

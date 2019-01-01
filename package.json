@@ -26,9 +26,12 @@
     "eslint": "5.10.0",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-plugin-import": "2.14.0",
+    "eslint-plugin-mozilla": "1.0.3",
+    "eslint-plugin-no-unsanitized": "^3.0.2",
     "generate-json-webpack-plugin": "0.3.1",
     "web-ext": "2.9.2",
     "webpack": "4.27.1",
     "webpack-cli": "3.1.2"
-  }
+  },
+  "dependencies": {}
 }

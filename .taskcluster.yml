@@ -51,13 +51,15 @@ tasks:
             npm install &&
             npm run build &&
             npm run lint &&
-            npm run package
+            npm run package &&
+            /repo/bin/commit_xpi.sh
       metadata:
         name: "Firefox Experiments GitHub Tests"
         description: "All tests"
         owner: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
   # When a commit is pushed to master, perform this task
+  # Note: Currently this is wrongly showing a status on PR pushes in GitHub (Bug 1514914)
   # If a branch is merged without being updated first, the tests could pass on the branch
   # but not when things are merged into master.
   - $if: 'tasks_for == "github-push"'
@@ -91,7 +93,8 @@ tasks:
               npm install &&
               npm run build &&
               npm run lint &&
-              npm run package
+              npm run package &&
+              /repo/bin/commit_xpi.sh
         metadata:
           name: "Firefox Experiments GitHub Tests"
           description: "All tests"
