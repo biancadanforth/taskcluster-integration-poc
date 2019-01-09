@@ -29,9 +29,9 @@
     "eslint-plugin-mozilla": "1.0.3",
     "eslint-plugin-no-unsanitized": "^3.0.2",
     "generate-json-webpack-plugin": "0.3.1",
+    "taskcluster-client": "12.2.0",
     "web-ext": "2.9.2",
     "webpack": "4.27.1",
     "webpack-cli": "3.1.2"
-  },
-  "dependencies": {}
+  }
 }

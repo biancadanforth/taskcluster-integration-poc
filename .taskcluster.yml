@@ -3,7 +3,9 @@
 #  - https://github.com/taskcluster/taskcluster-github/blob/master/docs/taskcluster-yml-v1.md
 version: 1
 policy:
-  pullRequests: public # Run these tasks for qualifying GH events from any one in the repo
+  # Run these tasks for qualifying GH events for collaborators only to avoid just anyone having access
+  # to my Taskcluster secret(s)
+  pullRequests: collaborators
 tasks:
   # When a PR is opened, reopened or synchronized, perform this task
   # This covers additional commits to an existing open PR
@@ -28,9 +30,15 @@ tasks:
       workerType: github-worker # TC's generic worker for any github projects; can do Try server pushes
       # A scope is a permission to perform a particular action. A task has a set of
       # scopes that determine what the task can do. These scopes are validated by the worker.
+      scopes:
+        - secrets:get:github.com/biancadanforth/taskcluster-integration-poc/ssh-key
       payload: # The format of a task's payload property is specific to the worker that will execute it
+        features:
+          # Service provided by the worker that lets the task make authenticated TC requests within
+          # the scope(s) of a particular task.
+          taskclusterProxy: true
         maxRunTime: 600 # 10 minutes
-        image: "node:8" # The Docker image to pull
+        image: "node:10" # The Docker image to pull
         # The worker will automatically upload any artifacts upon task completion
         artifacts: # syntax depends on the workerType
           public/web-ext-artifacts:
@@ -39,9 +47,12 @@ tasks:
             path: /repo/web-ext-artifacts
             type: directory
         env: # Environment variables to declare in the shell
-          DEBUG: "* -eslint*" # Say you have debug statements in library code; a DEBUG variable with a
+          # Say you have debug statements in library code; a DEBUG variable with a
           # value of * will log all levels of debug statements
-        command: # The command to run within that Docker image
+          DEBUG: "* -eslint*"
+          # The name of the secret to fetch from Taskcluster's Secrets API
+          SSHKEY_SECRET_NAME: "github.com/biancadanforth/taskcluster-integration-poc/ssh-key"
+        command: # The command to run within the Docker image
           - "/bin/bash"
           - "-lc" # '--login' (executes user's profile commands), '-c' (executes commands from a string)
           - >-
@@ -52,7 +63,9 @@ tasks:
             npm run build &&
             npm run lint &&
             npm run package &&
-            /repo/bin/commit_xpi.sh
+            /repo/bin/commit_xpi.sh &&
+            /repo/bin/configure_ssh.sh &&
+            node /repo/bin/get_secret.js
       metadata:
         name: "Firefox Experiments GitHub Tests"
         description: "All tests"
