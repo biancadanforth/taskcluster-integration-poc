@@ -37,7 +37,7 @@ tasks:
           # Service provided by the worker that lets the task make authenticated TC requests within
           # the scope(s) of a particular task.
           taskclusterProxy: true
-        maxRunTime: 600 # 10 minutes
+        maxRunTime: 1200 # 20 minutes
         image: "node:10" # The Docker image to pull
         # The worker will automatically upload any artifacts upon task completion
         artifacts: # syntax depends on the workerType
@@ -52,6 +52,7 @@ tasks:
           DEBUG: "* -eslint*"
           # The name of the secret to fetch from Taskcluster's Secrets API
           SSHKEY_SECRET_NAME: "github.com/biancadanforth/taskcluster-integration-poc/ssh-key"
+          SHELL: "/bin/bash"
         command: # The command to run within the Docker image
           - "/bin/bash"
           - "-lc" # '--login' (executes user's profile commands), '-c' (executes commands from a string)
