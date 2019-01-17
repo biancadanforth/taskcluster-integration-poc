@@ -16,7 +16,10 @@ const SSHKEY_SECRET_NAME = process.env.SSHKEY_SECRET_NAME || "";
     if (sshKey) {
       fs.writeFile(`${process.env.HOME}/.ssh/id_rsa_experiments_pusher`, sshKey, "utf8", (err) => {
         if (err) console.log(err);
-        console.log(typeof sshKey);
+        // Try server rejects if identity file permissions are too open; restrict to read by owner only
+        fs.chmod(`${process.env.HOME}/.ssh/id_rsa_experiments_pusher`, fs.constants.S_IRUSR, (err) => {
+          if (err) console.log(err);
+        });
       });
     }
   }
