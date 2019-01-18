@@ -31,7 +31,7 @@ EOF
 fi
 
 # Without this, the first time I connect to this server, it will prompt me
-# to ask if I am sure I want to connect. and the task will hang and timeout.
+# to ask if I am sure I want to connect, and the task will hang and timeout.
 echo ">>> Put hg.mozilla.org server on the list of known hosts"
 if [ ! -f ~/.ssh/known_hosts ]
 then

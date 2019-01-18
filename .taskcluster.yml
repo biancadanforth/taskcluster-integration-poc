@@ -3,12 +3,12 @@
 #  - https://github.com/taskcluster/taskcluster-github/blob/master/docs/taskcluster-yml-v1.md
 version: 1
 policy:
-  # Run these tasks for qualifying GH events for collaborators only to avoid just anyone having access
-  # to my Taskcluster secret(s)
+  # Run these tasks for qualifying GH events for collaborators only to avoid just anyone having
+  # access to my Taskcluster secret(s)
   pullRequests: collaborators
 tasks:
-  # When a PR is opened, reopened or synchronized, perform this task
-  # This covers additional commits to an existing open PR
+  # When a PR is opened, reopened or synchronized, perform this task; this covers additional
+  # commits to an existing open PR
   - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
     then:
       # TC creates a task group with tasks in it; each task has an ID. TC will provide a link
@@ -27,35 +27,34 @@ tasks:
       # resources within which the task should be executed. Pools may use different
       # EC2 instance types, AMIs (Amazon Machine Images), etc.
       # Generally, github-worker is a variant of docker-worker in TC docs
-      workerType: github-worker # TC's generic worker for any github projects; can do Try server pushes
-      # A scope is a permission to perform a particular action. A task has a set of
-      # scopes that determine what the task can do. These scopes are validated by the worker.
+      workerType: github-worker # TC's generic worker for any github projects
+      # A scope is a permission to perform a particular action. A task has a set of scopes
+      # that determine what the task can do. These scopes are validated by the worker.
       scopes:
         - secrets:get:github.com/biancadanforth/taskcluster-integration-poc/ssh-key
-      payload: # The format of a task's payload property is specific to the worker that will execute it
+      payload: # format depends on workerType
         features:
-          # Service provided by the worker that lets the task make authenticated TC requests within
-          # the scope(s) of a particular task.
+          # Service provided by the worker that lets the task make authenticated TC
+          # requests within the scope(s) of a particular task.
           taskclusterProxy: true
         maxRunTime: 1200 # 20 minutes
         image: "node:10" # The Docker image to pull
         # The worker will automatically upload any artifacts upon task completion
-        artifacts: # syntax depends on the workerType
+        artifacts: # format depends on the workerType
           public/web-ext-artifacts:
             # contentType is not a valid key for workerType github-worker
             expires: {$fromNow: '14 days'}
             path: /repo/web-ext-artifacts
             type: directory
         env: # Environment variables to declare in the shell
-          # Say you have debug statements in library code; a DEBUG variable with a
-          # value of * will log all levels of debug statements
-          DEBUG: "* -eslint*"
+          DEBUG: "* -eslint*" # Log levels for debug statements in library code; * means all
           # The name of the secret to fetch from Taskcluster's Secrets API
           SSHKEY_SECRET_NAME: "github.com/biancadanforth/taskcluster-integration-poc/ssh-key"
           SHELL: "/bin/bash"
         command: # The command to run within the Docker image
           - "/bin/bash"
-          - "-lc" # '--login' (executes user's profile commands), '-c' (executes commands from a string)
+          # '--login' (executes user's profile commands), '-c' (executes commands from a string)
+          - "-lc"
           - >-
             git clone ${event.pull_request.head.repo.git_url} repo &&
             cd repo &&
@@ -64,11 +63,11 @@ tasks:
             npm run build &&
             npm run lint &&
             npm run package &&
+            /repo/bin/configure_hg.sh &&
             /repo/bin/commit_xpi.sh &&
             /repo/bin/configure_ssh.sh &&
             node /repo/bin/get_secret.js &&
             cd mozilla-central &&
-            /repo/bin/configure_hg.sh &&
             ./mach try -p linux64 -u all -t none --artifact
       metadata:
         name: "Firefox Experiments GitHub Tests"
@@ -76,9 +75,7 @@ tasks:
         owner: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
   # When a commit is pushed to master, perform this task
-  # Note: Currently this is wrongly showing a status on PR pushes in GitHub (Bug 1514914)
-  # If a branch is merged without being updated first, the tests could pass on the branch
-  # but not when things are merged into master.
+  # Note: Currently this is wrongly showing a status in GitHub PRs (Bug 1514914)
   - $if: 'tasks_for == "github-push"'
     then:
       $if: 'event.ref == "refs/heads/master"'

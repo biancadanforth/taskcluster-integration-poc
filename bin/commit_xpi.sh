@@ -27,4 +27,4 @@ cp /repo/web-ext-artifacts/* /repo/mozilla-central/testing/profiles/common/exten
 echo ">>> Commit diff to hg"
 cd mozilla-central
 hg add .
-hg commit -u "Bianca Danforth <bdanforth@mozilla.com>" -m "Temporary commit to run extension on the Try server"
+hg commit -m "Temporary commit to run extension on the Try server"

@@ -7,6 +7,7 @@ const taskcluster = require("taskcluster-client");
 const fs = require("fs");
 
 const SSHKEY_SECRET_NAME = process.env.SSHKEY_SECRET_NAME || "";
+const IDENTITY_FILE = `${process.env.HOME}/.ssh/id_rsa_experiments_pusher`;
 
 (async function main() {
   if (SSHKEY_SECRET_NAME) {
@@ -14,10 +15,10 @@ const SSHKEY_SECRET_NAME = process.env.SSHKEY_SECRET_NAME || "";
     const sshKeySecret = await secrets.get(SSHKEY_SECRET_NAME);
     const sshKey = sshKeySecret.secret["ssh-key"] || null;
     if (sshKey) {
-      fs.writeFile(`${process.env.HOME}/.ssh/id_rsa_experiments_pusher`, sshKey, "utf8", (err) => {
+      fs.writeFile(IDENTITY_FILE, sshKey, "utf8", (err) => {
         if (err) console.log(err);
         // Try server rejects if identity file permissions are too open; restrict to read by owner only
-        fs.chmod(`${process.env.HOME}/.ssh/id_rsa_experiments_pusher`, fs.constants.S_IRUSR, (err) => {
+        fs.chmod(IDENTITY_FILE, fs.constants.S_IRUSR, (err) => {
           if (err) console.log(err);
         });
       });
