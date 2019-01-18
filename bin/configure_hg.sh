@@ -10,6 +10,14 @@
 
 set -e
 
+# Update version of Mercurial
+apt-get remove -y mercurial # system package managers often lag behind compared to others like pip
+apt autoremove -y libjs-excanvas mercurial-common # remove related automatically installed packages
+apt update
+apt install -y python-pip
+pip install mercurial
+hash hg # clear old location of hg in bash's cache
+
 # This repo has the requisite extension `push-to-try` and the recommended extension firefoxtree
 # Reference: https://wiki.mozilla.org/ReleaseEngineering/TryServer, Configuration section
 echo ">>> Clone Mozilla Version Control Tools hg repo"
