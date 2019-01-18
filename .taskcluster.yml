@@ -66,7 +66,10 @@ tasks:
             npm run package &&
             /repo/bin/commit_xpi.sh &&
             /repo/bin/configure_ssh.sh &&
-            node /repo/bin/get_secret.js
+            node /repo/bin/get_secret.js &&
+            cd mozilla-central &&
+            /repo/bin/configure_hg.sh &&
+            ./mach try -p linux64 -u all -t none --artifact
       metadata:
         name: "Firefox Experiments GitHub Tests"
         description: "All tests"
