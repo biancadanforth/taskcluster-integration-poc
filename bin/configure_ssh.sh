@@ -29,3 +29,12 @@ Host hg.mozilla.org
   IdentityFile ~/.ssh/id_rsa_experiments_pusher
 EOF
 fi
+
+# Without this, the first time I connect to this server, it will prompt me
+# to ask if I am sure I want to connect. and the task will hang and timeout.
+echo ">>> Put hg.mozilla.org server on the list of known hosts"
+if [ ! -f ~/.ssh/known_hosts ]
+then
+   touch ~/.ssh/known_hosts
+   ssh-keyscan -t rsa -H hg.mozilla.org >> ~/.ssh/known_hosts
+fi
