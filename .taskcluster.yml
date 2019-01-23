@@ -14,10 +14,12 @@ tasks:
         git_url: ${event.repository.url}
         url: ${event.repository.url}
         ref: ${event.after}
+        owner: ${event.pusher.name}
       else:
         git_url: ${event.pull_request.head.repo.git_url}
         url: ${event.pull_request.head.repo.url}
         ref: ${event.pull_request.head.sha}
+        owner: ${event.pull_request.user.login}
   in:
     $let:
       taskRef:
@@ -61,6 +63,8 @@ tasks:
             # The name of the secret to fetch from Taskcluster's Secrets API
             SSHKEY_SECRET_NAME: "github.com/biancadanforth/taskcluster-integration-poc/ssh-key"
             SHELL: "/bin/bash"
+            USERNAME: ${repo.owner}
+            USER_EMAIL: ${repo.owner}@users.noreply.github.com
           command: # The command to run within the Docker image
             - "/bin/bash"
             # '--login' (executes user's profile commands), '-c' (executes commands from a string)
@@ -82,10 +86,10 @@ tasks:
         metadata:
           name: "Firefox Experiments GitHub Tests"
           description: "All tests"
-          owner: ${event.pull_request.user.login}@users.noreply.github.com
-          source: ${event.repository.url}
+          owner: ${repo.owner}@users.noreply.github.com
+          source: ${repo.url}
     in:
-      # When a commit is pushed to master or a PR is opened, reopened or synchronized
+      # When a PR is created or modified, perform this task
       - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
         then: {$eval: taskRef}
       # When a commit is pushed to master, perform this task

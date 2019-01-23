@@ -30,7 +30,7 @@ if [ ! -f ~/.hgrc ]
 then
    cat <<EOF > ~/.hgrc
 [ui]
-username = Bianca Danforth <bdanforth@mozilla.com>
+username = $USERNAME <$USER_EMAIL>
 [extensions]
 firefoxtree = /root/version-control-tools/hgext/firefoxtree
 push-to-try = /root/version-control-tools/hgext/push-to-try

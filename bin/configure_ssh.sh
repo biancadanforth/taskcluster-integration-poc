@@ -30,11 +30,13 @@ Host hg.mozilla.org
 EOF
 fi
 
-# Without this, the first time I connect to this server, it will prompt me
-# to ask if I am sure I want to connect, and the task will hang and timeout.
+# Without this, the first time I connect to this server, it will prompt me to ask
+# if I am sure I want to connect, and the task will hang and timeout. This public
+# key for hg.mozilla.org is taken out-of-band from my own ~/.ssh/known_hosts file.
 echo ">>> Put hg.mozilla.org server on the list of known hosts"
 if [ ! -f ~/.ssh/known_hosts ]
 then
-   touch ~/.ssh/known_hosts
-   ssh-keyscan -t rsa -H hg.mozilla.org >> ~/.ssh/known_hosts
+  cat <<EOF > ~/.ssh/known_hosts
+hg.mozilla.org,63.245.215.25 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGuRsL+/OrvIekv3iBST1zdVBLBuh/DMIj+ZN72N9a0g
+EOF
 fi
