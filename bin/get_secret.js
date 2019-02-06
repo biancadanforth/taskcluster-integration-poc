@@ -17,7 +17,7 @@ const IDENTITY_FILE = `${process.env.HOME}/.ssh/id_rsa_experiments_pusher`;
     if (sshKey) {
       fs.writeFile(IDENTITY_FILE, sshKey, "utf8", (err) => {
         if (err) console.log(err);
-        // Try server rejects if identity file permissions are too open; restrict to read by owner only
+        // ssh client rejects if identity file permissions are too open; restrict to read by owner only
         fs.chmod(IDENTITY_FILE, fs.constants.S_IRUSR, (err) => {
           if (err) console.log(err);
         });

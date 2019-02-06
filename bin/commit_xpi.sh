@@ -9,7 +9,7 @@
 set -e
 
 # Note: If clone fails with error: `abort: unexpected response from remote server: empty string.`,
-# that clonebundle may be corrupted. Try another URL to confirm and talk to sheehan in #vcs in IRC.
+# that clonebundle may be corrupted. Try another URL to confirm and contact #vcs in IRC.
 echo ">>> Clone Firefox"
 hg clone https://hg.mozilla.org/mozilla-central
 

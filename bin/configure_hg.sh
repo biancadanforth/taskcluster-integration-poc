@@ -11,7 +11,7 @@
 set -e
 
 # Update version of Mercurial
-apt-get remove -y mercurial # system package managers often lag behind compared to others like pip
+apt remove -y mercurial # system package managers often lag behind compared to others like pip
 apt autoremove -y libjs-excanvas mercurial-common # remove related automatically installed packages
 apt update
 apt install -y python-pip
