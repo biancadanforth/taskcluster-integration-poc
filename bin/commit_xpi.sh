@@ -8,39 +8,23 @@
 
 set -e
 
-# TODO: Make env variable in .taskcluster.yml that gets passed to this script to specify
-# which channel(s) to test in
-
-# Repo URLs:
-#   - Nightly: https://hg.mozilla.org/mozilla-central
-#   - Beta: https://hg.mozilla.org/releases/mozilla-beta
-#   - Release: https://hg.mozilla.org/releases/mozilla-release
-echo ">>> clone Firefox"
-# TODO: Investigate how to get a shallow clone of Firefox -- this full clone takes 3ish minutes alone.
+# Note: If clone fails with error: `abort: unexpected response from remote server: empty string.`,
+# that clonebundle may be corrupted. Try another URL to confirm and contact #vcs in IRC.
+echo ">>> Clone Firefox"
 hg clone https://hg.mozilla.org/mozilla-central
 
-# Test dir(s) specified per bugs 1451159 and 1458571
-echo ">>> copy XPI (or ZIP) to test dir"
+# Per bugs 1451159/1458571, when copied here, the extension will be installed with the testing profile.
+echo ">>> Copy XPI (or ZIP) to test dir"
 cp /repo/web-ext-artifacts/* /repo/mozilla-central/testing/profiles/common/extensions/
 
-# --artifact is not a recognized option for './mach build', so enable artifact builds via .mozconfig
-echo ">>> copy over .mozconfig to enable artifact builds locally"
-# TODO: make .mozconfig file
-# TODO: For Beta and Release builds, add 'releases/mozilla-beta' or 'releases/mozilla-release'
-# respectively to the list of CANDIDATE_TREES in ./python/mozbuild/mozbuild/artifacts.py
-
-echo ">>> copy test files over to Firefox"
-# TODO: copy contents of repo/test/ into Firefox's ./testing/extensions/ dir. 
-
-echo ">>> build Firefox"
-# ./mach clobber
-# ./mach build
-
-# The diff does NOT need to be checked in to run tests locally
-# Note: The extension is only installed with the testing profile (i.e. when running mochitests or talos
-# tests); it is not installed with ./mach build or ./mach run separately.
-echo ">>> verify with local mochitest that extension is installed"
-# ./mach test /path/to/test
+# TODO - depends on Bug 1517083, else must edit an existing moz.build file programmatically ~
+# echo ">>> Copy over .mozconfig to enable artifact builds locally"
+# echo ">>> Copy test files over to Firefox"
+# echo ">>> Build Firefox"
+# echo ">>> Verify with custom local mochitest that extension is installed"
 
 # The diff needs to be checked in to run on the Try server
-echo ">>> commit diff to hg"
+echo ">>> Commit diff to hg"
+cd mozilla-central
+hg add .
+hg commit -m "Temporary commit to run extension on the Try server"
