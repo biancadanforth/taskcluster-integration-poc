@@ -82,7 +82,7 @@ tasks:
               /repo/bin/configure_ssh.sh &&
               node /repo/bin/get_secret.js &&
               cd mozilla-central &&
-              ./mach try -p linux64 -u all -t none --artifact
+              ./mach try -b o -p linux64 testing/extensions --artifact
         metadata:
           name: "Firefox Experiments GitHub Tests"
           description: "All tests"
