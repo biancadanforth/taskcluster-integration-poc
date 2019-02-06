@@ -36,6 +36,12 @@ cd mozilla-central
 echo 1 | ./mach bootstrap --no-interactive # see Bug 1521903
 echo ">>> Build Firefox"
 ./mach build
+# Mochitests require a display, so we must run the tests headlessly
+echo ">>> Start up a display server so mochitests can run"
+apt install xvfb -y
+Xvfb :99 &
+export DISPLAY=:99
+
 echo ">>> Verify with custom local mochitest that extension is installed"
 ./mach test testing/extensions
 
