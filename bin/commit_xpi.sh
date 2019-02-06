@@ -31,8 +31,10 @@ EOF
 fi
 echo ">>> Copy test files over to Firefox"
 cp -r /repo/test/* /repo/mozilla-central/testing/extensions/
-echo ">>> Build Firefox"
+echo ">>> Run ./mach bootstrap to install dependencies for building Firefox"
 cd mozilla-central
+echo 1 | ./mach bootstrap --no-interactive # see Bug 1521903
+echo ">>> Build Firefox"
 ./mach build
 echo ">>> Verify with custom local mochitest that extension is installed"
 ./mach test testing/extensions
