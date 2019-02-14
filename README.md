@@ -10,8 +10,7 @@ This project demonstrates the following capabilities using Taskcluster:
 * Run extension-specific tests in Node
 * Upload extension's XPI as a build artifact
 * Run regression tests on the Try server with the extension installed
-
-This is largely done through the [Taskcluster config file](.taskcluster.yml) in the project's root directory.
+* Allow developers to run custom Mozilla tests on the Try server (See [Issue #8](https://github.com/biancadanforth/taskcluster-integration-poc/issues/8))
 
 
 
@@ -19,7 +18,6 @@ This is largely done through the [Taskcluster config file](.taskcluster.yml) in 
 
 In addition to the capabilities listed above, ultimately, this project will also:
 * Provide a baseline Taskcluster config that developers can drop into their existing GitHub repositories
-* Allow developers to run custom Mozilla tests on the Try server (See [Issue #8](https://github.com/biancadanforth/taskcluster-integration-poc/issues/8))
 * Suggest the minimum set of Mozilla tests to run and when (See [Issue #14](https://github.com/biancadanforth/taskcluster-integration-poc/issues/14))
 
 
@@ -76,7 +74,15 @@ npm run lint
 
 #### Testing on the Try server
 
-To run existing Mozilla tests in Firefox on the Try server, open a PR. Taskcluster will start up a task to do this automatically.
+_To run custom and/or existing Mozilla tests in Firefox on the Try server_
+1. Add the desired Try syntax to the `./mach try` command in the [Taskcluster config file](.taskcluster.yml); for example:
+  - To run existing page load performance tests, you can use `./mach try fuzzy -q 'linux64 raptor-tp6 firefox'`.
+  - To run the custom Mochitest provided in this example repo, you can use `./mach try -b o -p linux64 testing/extensions --artifact`.
+2. Open a PR.
+
+Note: Once [Issue #19](https://github.com/biancadanforth/taskcluster-integration-poc/issues/19) is closed, a single `./mach try` command can run the custom tests and performance tests.
+
+Taskcluster will start up a task to run the tests automatically.
 
 The task's status can be viewed in the PR in GitHub. Task details, logs and build artifacts can be found in the [Taskcluster dashboard](#the-taskcluster-dashboard).
 
