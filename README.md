@@ -1,4 +1,4 @@
-# Taskcluster Integration for Web Extensions
+# Taskcluster Integration for WebExtensions
 
 This is a proof-of-concept to show that a Firefox [web extension](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions) (or [web extension experiment](https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/index.html)) can be tested using Mozilla CI--principally on the [Try server](https://firefox-source-docs.mozilla.org/tools/try/index.html) via [Taskcluster](https://docs.taskcluster.net/docs/tutorial/what-is-tc). For more, see [Motivation](#motivation) in the Appendix.
 
