@@ -32,6 +32,6 @@
     "taskcluster-client": "13.0.0",
     "web-ext": "3.0.0",
     "webpack": "4.27.1",
-    "webpack-cli": "3.1.2"
+    "webpack-cli": "3.3.12"
   }
 }
